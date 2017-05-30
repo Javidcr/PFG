@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # --*-- coding: UTF-8 --*--
 import sys, socket
+
+
 try :
 	result=socket.gethostbyaddr("8.8.8.8")
 	print "El nombre del host primario es:"
