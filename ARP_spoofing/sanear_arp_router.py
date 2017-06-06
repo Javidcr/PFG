@@ -1,19 +1,14 @@
 from scapy.all import *
-import nmap
+import netifaces
 
-nm = nmap.PortScanner()
-nm.scan()
-for host in nm.all_hosts():
-	print "\n[+]\tIP:", host
-	print "\tSTATUS:", nm[host]['status']['state']
-	try:
-		print "\tMAC:", nm[host]['addresses']['mac']
-	except:
-		print "desconocida"
-
-
-'''
-while 1:
-	packet = Ether()/ARP(op="who-has", hwsrc="", psrc="", pdst="192.168.1.1")
-	send(packet)
-'''
+addrs = netifaces.ifaddresses("wlp2s0")
+try:
+    mac = addrs[netifaces.AF_LINK][0]['addr']
+    print mac 
+    ip = addrs[netifaces.AF_INET][0]['addr']
+    print ip
+    while 1:
+		packet = Ether()/ARP(op="who-has", hwsrc=mac, psrc=ip, pdst="192.168.1.1")
+		send(packet)
+except:
+	print

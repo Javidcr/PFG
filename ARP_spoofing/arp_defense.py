@@ -78,17 +78,6 @@ def bloquear_pc(ip_atacante, mac_atacante, mac_router):
 
         pause()
         os.system("./start.sh")
-        
-        '''
-        proceso = Popen(["./sanear_arp_router.py"], stdout=PIPE, stderr=PIPE)
-        stdout, stderr = proceso.communicate()
-        print "stdout: {0}\n stderr: {1}".format(stdout, stderr)
-        PID = proceso.pid
-
-        pause()
-
-        proceso.terminate()
-        '''
 
     except:
         print "Error inesperado:", sys.exc_info()[0]
