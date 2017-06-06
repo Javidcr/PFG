@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
 nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
-PID = int()
+# PID = int()
 
 
 def cabecera():
