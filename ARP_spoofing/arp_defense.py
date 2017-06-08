@@ -1,6 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# --*-- coding: UTF-8 --*--
 # librerias
 #ESTE METODO FUNCIONA CUANDO SE ALAMACENA EN EL DICCIONARIO LA ip Y LA mac DEL ROUTER
+
+__author__ = 'Francisco Javier del Castillo Ramírez'
+__version__ = '1.0'
+__last_modification__ = '2017.06.08'
 
 from scapy.all import *
 #import tkMessageBox
