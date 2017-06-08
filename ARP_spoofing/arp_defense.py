@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 # librerias
 #ESTE METODO FUNCIONA CUANDO SE ALAMACENA EN EL DICCIONARIO LA ip Y LA mac DEL ROUTER
 

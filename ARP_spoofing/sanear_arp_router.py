@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from scapy.all import *
 import netifaces
 import nmap
