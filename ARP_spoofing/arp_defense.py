@@ -20,6 +20,11 @@ diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
 nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
 # PID = int()
+paquetes = None
+try:
+    writer=PcapWriter("temp.pcap")
+except:
+    pass
 
 
 def cabecera():
@@ -171,6 +176,8 @@ def parar_ejecucion():
     print "\n... Limpiando cache ARP ..."
     os.system("ip -s -s neigh flush all")
     os.system("arp -d 192.168.1.1")
+    print "\n... Guardando paquetes utilizados ..."
+    writer.flush()
     print "...\n"
 
 
@@ -179,7 +186,8 @@ if __name__ == '__main__':
         cabecera()
         analizar_red()
         while 1:
-            sniff(prn=analizar_paquetes, filter="arp")
+            paquetes = sniff(prn=analizar_paquetes, filter="arp")
+            writer.write(paquetes)
 
     except KeyboardInterrupt:
         parar_ejecucion()
