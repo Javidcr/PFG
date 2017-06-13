@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # --*-- coding: UTF-8 --*--
-# librerias
+
 #ESTE METODO FUNCIONA CUANDO SE ALAMACENA EN EL DICCIONARIO LA ip Y LA mac DEL ROUTER
+#por ello lo primero que hago es enviar un paquete al router para poder almacenar su IP y MAC
 
 __author__ = 'Francisco Javier del Castillo Ramírez'
 __version__ = '1.0'
-__last_modification__ = '2017.06.08'
+__last_modification__ = '2017.06.09'
 
 from scapy.all import *
 #import tkMessageBox
@@ -186,7 +187,7 @@ if __name__ == '__main__':
         cabecera()
         analizar_red()
         while 1:
-            paquetes = sniff(prn=analizar_paquetes, filter="arp")
+            paquetes = sniff(prn=analizar_paquetes, filter="arp", store=0)
             writer.write(paquetes)
 
     except KeyboardInterrupt:
