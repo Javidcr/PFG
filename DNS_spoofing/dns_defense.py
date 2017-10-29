@@ -28,21 +28,21 @@ def cabecera():
 
 def analizar_paquetes(paquete):
 
-	# 
+	#
 
     if paquete.haslayer(IP) and paquete.haslayer(UDP) and\
      paquete.haslayer(DNS) and paquete.haslayer(DNSRR):
      	cola.append(paquete)
         if len(cola)>0:
             for p_cola in cola:
-				print 
-				print "[DNSRR].rdata: {0} -!- {1}".format(paquete[DNSRR].rdata, p_cola[DNSRR].rdata)
-				print "[IP].dst: {0} -=- {1}".format(paquete[IP].dst, p_cola[IP].dst)
-				print "[IP].sport: {0} -=- {1}".format(paquete[IP].sport, p_cola[IP].sport)
-				print "[IP].dport: {0} -=- {1}".format(paquete[IP].dport, p_cola[IP].dport)
-				print "[DNS].id: {0} -=- {1}".format(paquete[DNS].id, p_cola[DNS].id)
-				print "[DNS].qd.qname {0} -=- {1}".format(paquete[DNS].qd.qname, p_cola[DNS].qd.qname)
-				print "[IP].payload: {0} -!- {1}".format(paquete[DNS].payload, p_cola[DNS].payload)
+				#print
+				#print "[DNSRR].rdata: {0} -!- {1}".format(paquete[DNSRR].rdata, p_cola[DNSRR].rdata)
+				#print "[IP].dst: {0} -=- {1}".format(paquete[IP].dst, p_cola[IP].dst)
+				#print "[IP].sport: {0} -=- {1}".format(paquete[IP].sport, p_cola[IP].sport)
+				#print "[IP].dport: {0} -=- {1}".format(paquete[IP].dport, p_cola[IP].dport)
+				#print "[DNS].id: {0} -=- {1}".format(paquete[DNS].id, p_cola[DNS].id)
+				#print "[DNS].qd.qname {0} -=- {1}".format(paquete[DNS].qd.qname, p_cola[DNS].qd.qname)
+				#print "[IP].payload: {0} -!- {1}".format(paquete[DNS].payload, p_cola[DNS].payload)
 				if p_cola[IP].dst == paquete[IP].dst and\
 				p_cola[IP].sport == paquete[IP].sport and\
 				p_cola[IP].dport == paquete[IP].dport and\
@@ -50,7 +50,7 @@ def analizar_paquetes(paquete):
 				p_cola[DNS].id == paquete[DNS].id and\
 				p_cola[DNS].qd.qname == paquete[DNS].qd.qname and\
 				p_cola[IP].payload != paquete[IP].payload:
-					print "DNS poisoning attempt detected"
+					print "Se ha detectado un ataque de envenenmiento de DNS"
 					print "TXID %s Request URL %s"%( p_cola[DNS].id, p_cola[DNS].qd.qname.rstrip('.'))
 					print "Respuesta1 [%s]"%p_cola[DNSRR].rdata
 					print "Respuesta2 [%s]"%paquete[DNSRR].rdata
@@ -66,3 +66,4 @@ if __name__ == '__main__':
 			writer.write(paquetes)
 	except KeyboardInterrupt:
 		writer.flush()
+        #wireshark(paquetes)
