@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # --*-- coding: UTF-8 --*--
 
-#ESTE METODO FUNCIONA CUANDO SE ALAMACENA EN EL DICCIONARIO LA ip Y LA mac DEL ROUTER
-#por ello lo primero que hago es enviar un paquete al router para poder almacenar su IP y MAC
 
 __author__ = 'Francisco Javier del Castillo Ramírez'
 __version__ = '1.0'
@@ -20,8 +18,8 @@ from subprocess import Popen, PIPE
 diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
 nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
-# PID = int()
 paquetes = None
+
 try:
     writer=PcapWriter("temp.pcap")
 except:
@@ -36,11 +34,11 @@ def cabecera():
 
 def analizar_red():
     print'\n============ {0} ============'.format('Analizando equipos de la red')
-    
+
     for host in nm.all_hosts():
-        
+
         if nm[host]['status']['state'] != "down":
-            print 
+            print
             print "\n[+]\tIP:", host
             print "\tSTATUS:", nm[host]['status']['state']
             try:
@@ -64,31 +62,20 @@ def pause():
     programPause = raw_input("Pulsa <ENTER> para continuar...")
 
 
-def bloquear_pc(ip_atacante, mac_atacante, mac_router):
-    
+def bloquear_pc(mac_atacante):
+
     try:
-        print "\n[+]\tSaneando cache ARP..."
-        os.system("ip -s -s neigh flush all")
-        os.system("arp -s 192.168.1.1 "+ mac_router)
-        print "\n[+]\tMostrando cache ARP"
-        os.system("arp -a")
 
         print "\n\tBloqueando conexiones entrantes de la MAC {0} ...".format(mac_atacante)
         os.system('iptables -A INPUT -i wlp2s0 -m mac --mac-source '+ mac_atacante +' -j DROP')
 
-        print "\tBloqueando conexiones entrantes de la IP {0} ...".format(ip_atacante)
-        os.system('iptables -A INPUT -s '+ ip_atacante +' -j DROP')
-
-        print "\tBloqueando conexiones salientes hacia la IP {0} ...".format(ip_atacante)
-        os.system('iptables -A OUTPUT -s '+ ip_atacante +' -j DROP')
-
         print "\tBloqueando cualquier paquete TCP que no se ha iniciado con el Flag SYN activo..."
         os.system('iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP')
 
-        print "\nSe ha saneado la cache ARP y se han aplicado reglas para bloquear al atacante.\n"
+        print "\nSe han aplicado reglas para bloquear al atacante.\n"
 
         pause()
-        os.system("./start.sh")
+        #os.system("./start.sh")
 
     except:
         print "Error inesperado:", sys.exc_info()[0]
@@ -97,9 +84,6 @@ def bloquear_pc(ip_atacante, mac_atacante, mac_router):
 
 
 def analizar_mac(mac_atacante):
-    ip_atacante = ""
-    mac_router = ""
-
     '''
     hosts_list = [(x, nm[x]['addresses']['mac']) for x in nm.all_hosts()]
     for host, addresses in hosts_list:
@@ -117,16 +101,11 @@ def analizar_mac(mac_atacante):
                 print "\tSTATUS:", nm[host]['status']['state']
                 print "\tMAC:", nm[host]['addresses']['mac']
 
-                ip_atacante = host
-
-            elif(nm[host]['addresses']['ipv4'] == "192.168.1.1"):
-                mac_router = nm[host]['addresses']['mac']
-
-    bloquear_pc(ip_atacante, mac_atacante, mac_router)
+    bloquear_pc( mac_atacante)
 
 
 def enviar_paquete_router():
-    
+
     # envio un paquete al router para que en su contestacion ( REPLY) almacene su IP y MAC reales.
     p_router = IP(dst="192.168.1.1")/ICMP()/"Esto es un paquete para el router"
     print "\n[+]\tEnviando paquete al router..."
@@ -145,9 +124,9 @@ def analizar_paquetes(pkt):
 
             print "\n[+]\tIP:", format(pkt[ARP].psrc)
             print "\tMAC del diccionario:",format(diccionario[pkt[ARP].psrc]), "\n\tMAC del PC:         ",format(pkt[ARP].hwsrc)
-            
+
             if diccionario[pkt[ARP].psrc] != pkt[ARP].hwsrc:
-                print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE ARP SPOOFING')
+                print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE IP SPOOFING')
 
                 #mensaje = 'Su PC es victima de un ataque de ARP spoofing.\nMAC del PC: {0}'.format(pkt[ARP].hwsrc)
                 #mejorar el mensaje
@@ -155,10 +134,10 @@ def analizar_paquetes(pkt):
 
                 analizar_mac((pkt[ARP].hwsrc).upper())
                 return None
-            
+
             else:
                 return "Paquete ARP recibido, no hay ataque detectado en este paquete..."
-        
+
         else:
 
             #almacena la ip y la mac del origen del paquete, el PC que envia el paquete
