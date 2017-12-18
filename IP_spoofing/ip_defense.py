@@ -21,7 +21,7 @@ nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
 paquetes = None
 
 try:
-    writer=PcapWriter("temp.cap")
+    pkts = PcapWriter("temp.pcap", append=True, sync=True)
 except:
     pass
 
@@ -114,6 +114,7 @@ def enviar_paquete_router():
 
 
 def analizar_paquetes(pkt):
+    pkts.write(pkt)
     enviar_paquete_router()
 
     # comprueba que es un paquete ARP de REQUEST o REPLY
@@ -147,7 +148,7 @@ def analizar_paquetes(pkt):
 
 
 def parar_ejecucion():
-    os.system("./stop.sh")
+    #os.system("./stop.sh")
     print "\n... Limpiando reglas iptables ..."
     os.system("iptables --flush")
     os.system("iptables --zero")
@@ -157,7 +158,7 @@ def parar_ejecucion():
     os.system("ip -s -s neigh flush all")
     os.system("arp -d 192.168.1.1")
     print "\n... Guardando paquetes utilizados ..."
-    writer.flush()
+    pkts.flush()
     print "...\n"
 
 
@@ -166,8 +167,7 @@ if __name__ == '__main__':
         cabecera()
         analizar_red()
         while 1:
-            paquetes = sniff(prn=analizar_paquetes, filter="arp", store=0)
-            writer.write(paquetes)
+            sniff(prn=analizar_paquetes, filter="arp", store=0)
 
     except KeyboardInterrupt:
         parar_ejecucion()

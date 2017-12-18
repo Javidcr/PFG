@@ -21,9 +21,8 @@ diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
 nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
 # PID = int()
-paquetes = None
 try:
-    writer=PcapWriter("temp.pcap")
+    pkts = PcapWriter("temp.pcap", append=True, sync=True)
 except:
     pass
 
@@ -36,11 +35,11 @@ def cabecera():
 
 def analizar_red():
     print'\n============ {0} ============'.format('Analizando equipos de la red')
-    
+
     for host in nm.all_hosts():
-        
+
         if nm[host]['status']['state'] != "down":
-            print 
+            print
             print "\n[+]\tIP:", host
             print "\tSTATUS:", nm[host]['status']['state']
             try:
@@ -65,7 +64,7 @@ def pause():
 
 
 def bloquear_pc(ip_atacante, mac_atacante, mac_router):
-    
+
     try:
         print "\n[+]\tSaneando cache ARP..."
         os.system("ip -s -s neigh flush all")
@@ -126,7 +125,7 @@ def analizar_mac(mac_atacante):
 
 
 def enviar_paquete_router():
-    
+
     # envio un paquete al router para que en su contestacion ( REPLY) almacene su IP y MAC reales.
     p_router = IP(dst="192.168.1.1")/ICMP()/"Esto es un paquete para el router"
     print "\n[+]\tEnviando paquete al router..."
@@ -135,6 +134,7 @@ def enviar_paquete_router():
 
 
 def analizar_paquetes(pkt):
+    pkts.write(pkt)
     enviar_paquete_router()
 
     # comprueba que es un paquete ARP de REQUEST o REPLY
@@ -145,7 +145,7 @@ def analizar_paquetes(pkt):
 
             print "\n[+]\tIP:", format(pkt[ARP].psrc)
             print "\tMAC del diccionario:",format(diccionario[pkt[ARP].psrc]), "\n\tMAC del PC:         ",format(pkt[ARP].hwsrc)
-            
+
             if diccionario[pkt[ARP].psrc] != pkt[ARP].hwsrc:
                 print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE ARP SPOOFING')
 
@@ -155,10 +155,10 @@ def analizar_paquetes(pkt):
 
                 analizar_mac((pkt[ARP].hwsrc).upper())
                 return None
-            
+
             else:
                 return "Paquete ARP recibido, no hay ataque detectado en este paquete..."
-        
+
         else:
 
             #almacena la ip y la mac del origen del paquete, el PC que envia el paquete
@@ -178,7 +178,7 @@ def parar_ejecucion():
     os.system("ip -s -s neigh flush all")
     os.system("arp -d 192.168.1.1")
     print "\n... Guardando paquetes utilizados ..."
-    writer.flush()
+    pkts.flush()
     print "...\n"
 
 
@@ -188,7 +188,6 @@ if __name__ == '__main__':
         analizar_red()
         while 1:
             paquetes = sniff(prn=analizar_paquetes, filter="arp", store=0)
-            writer.write(paquetes)
 
     except KeyboardInterrupt:
         parar_ejecucion()
