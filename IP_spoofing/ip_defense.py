@@ -21,7 +21,7 @@ nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
 paquetes = None
 
 try:
-    writer=PcapWriter("temp.pcap")
+    writer=PcapWriter("temp.cap")
 except:
     pass
 
