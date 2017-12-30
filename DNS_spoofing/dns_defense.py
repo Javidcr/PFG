@@ -15,7 +15,7 @@ from collections import deque
 cola = deque() #maxlen = 10
 paquetes = None
 try:
-    writer=PcapWriter("temp.pcap")
+    pkts = PcapWriter("temp.pcap", append=True, sync=True)
 except:
     pass
 
@@ -28,7 +28,7 @@ def cabecera():
 
 def analizar_paquetes(paquete):
 
-	#
+	pkts.write(paquete)
 
     if paquete.haslayer(IP) and paquete.haslayer(UDP) and\
      paquete.haslayer(DNS) and paquete.haslayer(DNSRR):
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
 		while 1:
 			paquetes = sniff(prn=analizar_paquetes, filter="udp port 53", store=0)
-			writer.write(paquetes)
+
 	except KeyboardInterrupt:
-		writer.flush()
+		pkts.flush()
         #wireshark(paquetes)
