@@ -117,33 +117,36 @@ def analizar_paquetes(pkt):
     pkts.write(pkt)
     enviar_paquete_router()
 
-    # comprueba que es un paquete ARP de REQUEST o REPLY
-    if ARP in pkt and pkt[ARP].op in (1,2):
+    # comprueba que es un paquete TCP
+    if pkt.haslayer(TCP):
 
         # se comprueba que la IP esta almacenada en el diccionario
-        if pkt[ARP].psrc in diccionario:
+        if (pkt[IP].src in diccionario) and (pkt[IP].src != "192.168.1.1"):
+            #pkt.show()
+            print "\n[+]\tMAC:", format(pkt.src)
+            for key,val in diccionario.items():
+                if(val == pkt.src):
+                    print key, "=>", val
+                    print "\tIP del diccionario: ",format(key), "\n\tIP del PC: ",format(pkt[IP].src)
 
-            print "\n[+]\tIP:", format(pkt[ARP].psrc)
-            print "\tMAC del diccionario:",format(diccionario[pkt[ARP].psrc]), "\n\tMAC del PC:         ",format(pkt[ARP].hwsrc)
+                    if key != pkt[IP].src:
+                        print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE IP SPOOFING')
 
-            if diccionario[pkt[ARP].psrc] != pkt[ARP].hwsrc:
-                print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE IP SPOOFING')
+                        #mensaje = 'Su PC es victima de un ataque de ARP spoofing.\nMAC del PC: {0}'.format(pkt[ARP].hwsrc)
+                        #mejorar el mensaje
+                        #tkMessageBox.showwarning('Aviso', mensaje)
 
-                #mensaje = 'Su PC es victima de un ataque de ARP spoofing.\nMAC del PC: {0}'.format(pkt[ARP].hwsrc)
-                #mejorar el mensaje
-                #tkMessageBox.showwarning('Aviso', mensaje)
+                        analizar_mac((pkt.src).upper())
+                        return None
 
-                analizar_mac((pkt[ARP].hwsrc).upper())
-                return None
-
-            else:
-                return "Paquete ARP recibido, no hay ataque detectado en este paquete..."
+                    else:
+                        return "Paquete TCP recibido, no hay ataque detectado en este paquete..."
 
         else:
 
             #almacena la ip y la mac del origen del paquete, el PC que envia el paquete
-            diccionario[pkt[ARP].psrc] = pkt[ARP].hwsrc
-            print "\n[+]\tIP:", format(pkt[ARP].psrc)
+            diccionario[pkt[IP].src] = pkt.src
+            print "\n[+]\tIP:", format(pkt[IP].src)
             return "Paquete recibido, IP y MAC almacenada en el diccionario..."
 
 
@@ -167,7 +170,7 @@ if __name__ == '__main__':
         cabecera()
         analizar_red()
         while 1:
-            sniff(prn=analizar_paquetes, filter="arp", store=0)
+            sniff(prn=analizar_paquetes, filter="tcp port 80", store=0)
 
     except KeyboardInterrupt:
         parar_ejecucion()
