@@ -93,12 +93,19 @@ def pause():
     programPause = raw_input("Pulsa <ENTER> para continuar...")
 
 
-def bloquear_pc(mac_atacante):
+def bloquear_pc(mac_atacante, ips_atacantes):
 
     try:
 
         print "\n\tBloqueando conexiones entrantes de la MAC {0} ...".format(mac_atacante)
         os.system('iptables -A INPUT -i wlp2s0 -m mac --mac-source '+ mac_atacante +' -j DROP')
+
+        for ip_atacante in ips_atacantes:
+            print "\tBloqueando conexiones entrantes de la IP {0} ...".format(ip_atacante)
+            os.system('iptables -A INPUT -s '+ ip_atacante +' -j DROP')
+
+            print "\tBloqueando conexiones salientes hacia la IP {0} ...".format(ip_atacante)
+            os.system('iptables -A OUTPUT -s '+ ip_atacante +' -j DROP')
 
         print "\tBloqueando cualquier paquete TCP que no se ha iniciado con el Flag SYN activo..."
         os.system('iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP')
@@ -115,24 +122,22 @@ def bloquear_pc(mac_atacante):
 
 
 def analizar_mac(mac_atacante):
-    '''
-    hosts_list = [(x, nm[x]['addresses']['mac']) for x in nm.all_hosts()]
-    for host, addresses in hosts_list:
-        print('{0}:{1}'.format(host, addresses))
-    '''
+    
+    # array para obtener todas las ips correspondientes a la mac atacante
+    ips_atacantes = list()
+
     for host in nm.all_hosts():
 
         if 'mac' in nm[host]['addresses']:
-            # print nm[host]
-            # print "Comparando MAC atacante: {0} con MAC: {1}".format(mac_atacante, nm[host]['addresses']['mac'])
             if (nm[host]['addresses']['mac'] == mac_atacante.upper()):
 
                 print "\n[+]\tDatos almacenados del atacante: "
                 print "\tIP:", host
                 print "\tSTATUS:", nm[host]['status']['state']
                 print "\tMAC:", nm[host]['addresses']['mac']
+                ips_atacantes.append(host)
 
-    bloquear_pc(mac_atacante.upper())
+    bloquear_pc(mac_atacante.upper(), ips_atacantes)
 
 
 def enviar_paquete_router():
