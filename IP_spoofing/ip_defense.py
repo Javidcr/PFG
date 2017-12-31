@@ -14,6 +14,8 @@ import nmap
 import time
 import sys
 from subprocess import Popen, PIPE
+import commands
+import re
 
 diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
@@ -57,6 +59,35 @@ def mostrar_resultado(resultado):
         print "Error: "+ str(resultado[0])
         print "Detalles: " + resultado[1]
 '''
+def __getRoute():
+
+    """
+
+    Funcion que devuelve el resultado del comando 'route -n'
+
+    """
+
+    try:
+
+        return commands.getoutput("/sbin/route -n").splitlines()
+
+    except:
+
+        return ""
+
+def returnGateway():
+
+    """ Funcion que devuelve la puerta de enlace predeterminada ... """
+
+    # Recorremos todas las lineas de la lista
+    for line in __getRoute():
+        # Si la primera posicion de la lista empieza 0.0.0.0
+        if line.split()[0]=="0.0.0.0":
+            # Cogemos la direccion si el formato concuerda con una direccion ip
+            if re.match("^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$", line.split()[1]):
+                return line.split()[1]
+
+    return ''
 
 def pause():
     programPause = raw_input("Pulsa <ENTER> para continuar...")
@@ -94,49 +125,86 @@ def analizar_mac(mac_atacante):
         if 'mac' in nm[host]['addresses']:
             # print nm[host]
             # print "Comparando MAC atacante: {0} con MAC: {1}".format(mac_atacante, nm[host]['addresses']['mac'])
-            if (nm[host]['addresses']['mac'] == mac_atacante):
+            if (nm[host]['addresses']['mac'] == mac_atacante.upper()):
 
                 print "\n[+]\tDatos almacenados del atacante: "
                 print "\tIP:", host
                 print "\tSTATUS:", nm[host]['status']['state']
                 print "\tMAC:", nm[host]['addresses']['mac']
 
-    bloquear_pc( mac_atacante)
+    bloquear_pc(mac_atacante.upper())
 
 
 def enviar_paquete_router():
 
     # envio un paquete al router para que en su contestacion ( REPLY) almacene su IP y MAC reales.
-    p_router = IP(dst="192.168.1.1")/ICMP()/"Esto es un paquete para el router"
+    p_router = IP(dst=returnGateway())/ICMP()/"Esto es un paquete para el router"
     print "\n[+]\tEnviando paquete al router..."
     send(p_router)
     #p_router.show()
 
+def es_paquete_router(pkt):
+
+    ip_router = returnGateway()
+    mac_router = None
+
+    ip_pkt = pkt[IP].src
+    mac_pkt = (pkt.src).upper()
+
+    #obtengo la mac del router
+    for host in nm.all_hosts():
+        if 'mac' in nm[host]['addresses']:
+            if host == ip_router:
+                mac_router = nm[host]['addresses']['mac']
+
+    #print "IP Router:", format(ip_router), "\tMac Router:", format(mac_router)
+    if ip_pkt == ip_router and mac_pkt == mac_router:
+        return True
+
+    elif ip_pkt != ip_router and mac_pkt == mac_router:
+        return True
+
+    elif ip_pkt != ip_router and mac_pkt != mac_router:
+        return False
+
+
+def es_ataque(ip_dicc, mac_dicc, ip_pkt, mac_pkt):
+
+    for host in nm.all_hosts():
+        if 'mac' in nm[host]['addresses']:
+            if nm[host]['addresses']['mac'] == mac_pkt.upper() and nm[host]['addresses']['mac'] == mac_dicc.upper():
+                if host != ip_dicc and ip_pkt == ip_dicc:
+                    return True
+                return False
 
 def analizar_paquetes(pkt):
+
     pkts.write(pkt)
     enviar_paquete_router()
 
     # comprueba que es un paquete TCP
     if pkt.haslayer(TCP):
-
-        # se comprueba que la IP esta almacenada en el diccionario
-        if (pkt[IP].src in diccionario) and (pkt[IP].src != "192.168.1.1"):
+        '''
+         se comprueba que la IP esta almacenada en el diccionario
+         y no se trata de ningún paquete enviado por el router
+         dado que estos paquetes vienen con la ip del router
+         o de cualquier otro servidor al que se le ha hecho una petición
+         y todos ellos vienen con la misma mac, la mac del router,
+         por lo tanto el script detectaría que se está realizando un ataque
+         al llegar varios paquetes con la misma mac y distintas ip.
+         '''
+        if (pkt[IP].src in diccionario) and es_paquete_router(pkt) == False:
             #pkt.show()
-            print "\n[+]\tMAC:", format(pkt.src)
+            #print "\n[+]\tMAC:", format(pkt.src)
             for key,val in diccionario.items():
-                if(val == pkt.src):
-                    print key, "=>", val
-                    print "\tIP del diccionario: ",format(key), "\n\tIP del PC: ",format(pkt[IP].src)
+                if val == pkt.src:
+                    print "\n[+]\tMAC del diccionario: ", format(val)
+                    print "\t[-] IP del diccionario: ",format(key), "\n\t[-] IP del paquete: ",format(pkt[IP].src)
 
-                    if key != pkt[IP].src:
+                    if es_ataque(key, val, pkt[IP].src, pkt.src):
                         print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE IP SPOOFING')
 
-                        #mensaje = 'Su PC es victima de un ataque de ARP spoofing.\nMAC del PC: {0}'.format(pkt[ARP].hwsrc)
-                        #mejorar el mensaje
-                        #tkMessageBox.showwarning('Aviso', mensaje)
-
-                        analizar_mac((pkt.src).upper())
+                        analizar_mac(pkt.src)
                         return None
 
                     else:
