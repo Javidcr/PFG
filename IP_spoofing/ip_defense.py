@@ -24,6 +24,7 @@ paquetes = None
 
 try:
     pkts = PcapWriter("temp.pcap", append=True, sync=True)
+    fecha_hora = time.strftime("%c")
 except:
     pass
 
@@ -36,7 +37,6 @@ def cabecera():
 
 def analizar_red():
     print'\n============ {0} ============'.format('Analizando equipos de la red')
-
     for host in nm.all_hosts():
 
         if nm[host]['status']['state'] != "down":
@@ -62,17 +62,11 @@ def mostrar_resultado(resultado):
 def __getRoute():
 
     """
-
     Funcion que devuelve el resultado del comando 'route -n'
-
     """
-
     try:
-
         return commands.getoutput("/sbin/route -n").splitlines()
-
     except:
-
         return ""
 
 def returnGateway():
@@ -117,14 +111,19 @@ def bloquear_pc(mac_atacante, ips_atacantes):
 
     except:
         print "Error inesperado:", sys.exc_info()[0]
-        print "Detalles:",sys.exc_info()[1]
+        print "Detalles:", sys.exc_info()[1]
         raise
 
 
 def analizar_mac(mac_atacante):
-    
+
     # array para obtener todas las ips correspondientes a la mac atacante
     ips_atacantes = list()
+    try:
+        fichero = open('LOG - '+fecha_hora+'.txt','w')
+        fichero.write("\n\tHA SUFRIDO UN ATAQUE DE IP SPOOFING")
+    except:
+        pass
 
     for host in nm.all_hosts():
 
@@ -132,11 +131,18 @@ def analizar_mac(mac_atacante):
             if (nm[host]['addresses']['mac'] == mac_atacante.upper()):
 
                 print "\n[+]\tDatos almacenados del atacante: "
-                print "\tIP:", host
+                print  "\tIP:", host
                 print "\tSTATUS:", nm[host]['status']['state']
                 print "\tMAC:", nm[host]['addresses']['mac']
+
+                fichero.write("\n\n[+]\tDatos almacenados del atacante: \n")
+                fichero.write("\n\tIP:\t\t"+ host)
+                fichero.write("\n\tSTATUS:\t"+ nm[host]['status']['state'])
+                fichero.write("\n\tMAC:\t"+ nm[host]['addresses']['mac'])
+
                 ips_atacantes.append(host)
 
+    fichero.close()
     bloquear_pc(mac_atacante.upper(), ips_atacantes)
 
 
@@ -208,7 +214,6 @@ def analizar_paquetes(pkt):
 
                     if es_ataque(key, val, pkt[IP].src, pkt.src):
                         print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE IP SPOOFING')
-
                         analizar_mac(pkt.src)
                         return None
 
