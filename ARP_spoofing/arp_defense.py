@@ -23,6 +23,7 @@ nm.scan(hosts = '192.168.1.0/24', arguments = '-n -sP -PE -T5')
 # PID = int()
 try:
     pkts = PcapWriter("temp.pcap", append=True, sync=True)
+    fecha_hora = time.strftime("%c")
 except:
     pass
 
@@ -99,6 +100,12 @@ def analizar_mac(mac_atacante):
     ip_atacante = ""
     mac_router = ""
 
+    try:
+        fichero = open('LOG - '+fecha_hora+'.txt','w')
+        fichero.write("\n\tHA SUFRIDO UN ATAQUE DE ARP SPOOFING")
+    except:
+        pass
+
     '''
     hosts_list = [(x, nm[x]['addresses']['mac']) for x in nm.all_hosts()]
     for host, addresses in hosts_list:
@@ -116,11 +123,16 @@ def analizar_mac(mac_atacante):
                 print "\tSTATUS:", nm[host]['status']['state']
                 print "\tMAC:", nm[host]['addresses']['mac']
 
+                fichero.write("\n\n[+]\tDatos almacenados del atacante: \n")
+                fichero.write("\n\tIP:\t\t"+ host)
+                fichero.write("\n\tSTATUS:\t"+ nm[host]['status']['state'])
+                fichero.write("\n\tMAC:\t"+ nm[host]['addresses']['mac'])
+
                 ip_atacante = host
 
             elif(nm[host]['addresses']['ipv4'] == "192.168.1.1"):
                 mac_router = nm[host]['addresses']['mac']
-
+    fichero.close()
     bloquear_pc(ip_atacante, mac_atacante, mac_router)
 
 
