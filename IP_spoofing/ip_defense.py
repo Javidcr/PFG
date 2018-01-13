@@ -12,10 +12,10 @@ from scapy.all import *
 import os
 import nmap
 import time
-#import sys
-#from subprocess import Popen, PIPE
-#import commands
-#import re
+import sys
+from subprocess import Popen, PIPE
+import commands
+import re
 
 diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
