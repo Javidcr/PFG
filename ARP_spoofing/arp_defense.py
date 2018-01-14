@@ -32,6 +32,7 @@ def cabecera():
     os.system('clear')
     localtime = time.asctime(time.localtime(time.time()))
     print'[ {0} ]'.format(localtime)
+    print 'Defensa de ARP y DNS spoofing'
 
 def analizar_red():
     print'\n============ {0} ============'.format('Analizando equipos de la red')
@@ -174,11 +175,6 @@ def analizar_paquetes(pkt):
 
             if diccionario[pkt[ARP].psrc] != pkt[ARP].hwsrc:
                 print '\n\n============ {0} ============'.format( 'ESTA SUFRIENDO UN ATAQUE DE ARP SPOOFING')
-
-                #mensaje = 'Su PC es victima de un ataque de ARP spoofing.\nMAC del PC: {0}'.format(pkt[ARP].hwsrc)
-                #mejorar el mensaje
-                #tkMessageBox.showwarning('Aviso', mensaje)
-
                 analizar_mac((pkt[ARP].hwsrc).upper())
                 return None
 

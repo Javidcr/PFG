@@ -1,10 +1,17 @@
 #!/bin/bash
-gnome-terminal -x bash -c "python ARP_spoofing/arp_defense.py" &
-PID=$!
-echo $PID | tee pid_arp
+clear
 
-gnome-terminal -x bash -c "python IP_spoofing/ip_defense.py" &
-PID=$!
-echo $PID | tee pid_ip
+DIA=`date +"%d/%m/%Y"`
+HORA=`date +"%H:%M:%S"`
 
-exit 0
+echo -e '\t[ '$DIA'  | '$HORA' ]\r'
+echo -e '\tIniciando aplicacion para la defenda de ataques spoofing...'
+
+echo -e '[#####                  ](33%)\r'
+./start_ip_defense.sh
+
+echo -e '[#############          ](66%)\r'
+./start_arp_defense.sh
+
+echo -e '[#######################](100%)\r'
+echo -e '\n'

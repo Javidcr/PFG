@@ -34,6 +34,7 @@ def cabecera():
     os.system('clear')
     localtime = time.asctime(time.localtime(time.time()))
     print'[ {0} ]'.format(localtime)
+    print 'Defensa de IP spoofing'
 
 def analizar_red():
     print'\n============ {0} ============'.format('Analizando equipos de la red')
