@@ -9,11 +9,10 @@ __version__ = '1.0'
 __last_modification__ = '2017.06.09'
 
 from scapy.all import *
-#import tkMessageBox
-#import commands
 import os
 import nmap
 import time
+import commands
 #import sys
 #from subprocess import Popen, PIPE
 
@@ -95,9 +94,28 @@ def bloquear_pc(ip_atacante, mac_atacante, mac_router):
         print "Detalles:",sys.exc_info()[1]
         raise
 
+def returnGateway():
+
+    #Funcion que devuelve la puerta de enlace predeterminada
+    result = ""
+    try:
+        result = commands.getoutput("/sbin/route -n").splitlines()
+    except:
+        raise
+
+    # Recorremos todas las lineas de la lista
+    for line in result:
+        # Si la primera posicion de la lista empieza 0.0.0.0
+        if line.split()[0]=="0.0.0.0":
+            # Cogemos la direccion si el formato concuerda con una direccion ip
+            if re.match("^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$", line.split()[1]):
+                return line.split()[1]
+
+    return ''
 
 def analizar_mac(mac_atacante):
     ip_atacante = ""
+    ip_router = returnGateway()
     mac_router = ""
 
     try:
@@ -106,11 +124,7 @@ def analizar_mac(mac_atacante):
     except:
         pass
 
-    '''
-    hosts_list = [(x, nm[x]['addresses']['mac']) for x in nm.all_hosts()]
-    for host, addresses in hosts_list:
-        print('{0}:{1}'.format(host, addresses))
-    '''
+
     for host in nm.all_hosts():
 
         if 'mac' in nm[host]['addresses']:
@@ -130,7 +144,7 @@ def analizar_mac(mac_atacante):
 
                 ip_atacante = host
 
-            elif(nm[host]['addresses']['ipv4'] == "192.168.1.1"):
+            elif(nm[host]['addresses']['ipv4'] == ip_router):
                 mac_router = nm[host]['addresses']['mac']
     fichero.close()
     bloquear_pc(ip_atacante, mac_atacante, mac_router)

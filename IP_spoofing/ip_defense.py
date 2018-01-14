@@ -59,22 +59,19 @@ def mostrar_resultado(resultado):
         print "Error: "+ str(resultado[0])
         print "Detalles: " + resultado[1]
 '''
-def __getRoute():
 
-    """
-    Funcion que devuelve el resultado del comando 'route -n'
-    """
-    try:
-        return commands.getoutput("/sbin/route -n").splitlines()
-    except:
-        return ""
 
 def returnGateway():
 
-    """ Funcion que devuelve la puerta de enlace predeterminada ... """
+    #Funcion que devuelve la puerta de enlace predeterminada
+    result = ""
+    try:
+        result = commands.getoutput("/sbin/route -n").splitlines()
+    except:
+        raise
 
     # Recorremos todas las lineas de la lista
-    for line in __getRoute():
+    for line in result:
         # Si la primera posicion de la lista empieza 0.0.0.0
         if line.split()[0]=="0.0.0.0":
             # Cogemos la direccion si el formato concuerda con una direccion ip
