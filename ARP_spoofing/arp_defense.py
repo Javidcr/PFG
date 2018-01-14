@@ -63,12 +63,12 @@ def pause():
     programPause = raw_input("Pulsa <ENTER> para continuar...")
 
 
-def bloquear_pc(ip_atacante, mac_atacante, mac_router):
+def bloquear_pc(ip_atacante, mac_atacante, ip_router, mac_router):
 
     try:
         print "\n[+]\tSaneando cache ARP..."
         os.system("ip -s -s neigh flush all")
-        os.system("arp -s 192.168.1.1 "+ mac_router)
+        os.system("arp -s "+ ip_router + " " + mac_router)
         print "\n[+]\tMostrando cache ARP"
         os.system("arp -a")
 
@@ -147,7 +147,7 @@ def analizar_mac(mac_atacante):
             elif(nm[host]['addresses']['ipv4'] == ip_router):
                 mac_router = nm[host]['addresses']['mac']
     fichero.close()
-    bloquear_pc(ip_atacante, mac_atacante, mac_router)
+    bloquear_pc(ip_atacante, mac_atacante, ip_router, mac_router)
 
 
 def enviar_paquete_router():
