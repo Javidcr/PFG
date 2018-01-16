@@ -4,11 +4,8 @@
 
 __author__ = 'Francisco Javier del Castillo Ramírez'
 __version__ = '1.0'
-__last_modification__ = '2017.06.09'
 
 from scapy.all import *
-#import tkMessageBox
-#import commands
 import os
 import nmap
 import time
@@ -50,16 +47,6 @@ def analizar_red():
                 print "desconocida"
     print'\n============ {0} ============'.format('Analizando paquetes')
 
-'''
-def mostrar_resultado(resultado):
-    #si no hay errores
-    if resultado[0] == 0:
-        print resultado[1]
-    #si ahy errores
-    else:
-        print "Error: "+ str(resultado[0])
-        print "Detalles: " + resultado[1]
-'''
 
 
 def returnGateway():
@@ -105,7 +92,6 @@ def bloquear_pc(mac_atacante, ips_atacantes):
         print "\nSe han aplicado reglas para bloquear al atacante.\n"
 
         pause()
-        #os.system("./start.sh")
 
     except:
         print "Error inesperado:", sys.exc_info()[0]
@@ -166,7 +152,7 @@ def es_paquete_router(pkt):
             if host == ip_router:
                 mac_router = nm[host]['addresses']['mac']
 
-    #print "IP Router:", format(ip_router), "\tMac Router:", format(mac_router)
+
     if ip_pkt == ip_router and mac_pkt == mac_router:
         return True
 
@@ -204,7 +190,6 @@ def analizar_paquetes(pkt):
          '''
         if (pkt[IP].src in diccionario) and es_paquete_router(pkt) == False:
             #pkt.show()
-            #print "\n[+]\tMAC:", format(pkt.src)
             for key,val in diccionario.items():
                 if val == pkt.src:
                     print "\n[+]\tMAC del diccionario: ", format(val)
@@ -227,7 +212,7 @@ def analizar_paquetes(pkt):
 
 
 def parar_ejecucion():
-    #os.system("./stop.sh")
+    
     print "\n... Limpiando reglas iptables ..."
     os.system("iptables --flush")
     os.system("iptables --zero")

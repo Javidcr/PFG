@@ -6,15 +6,12 @@
 
 __author__ = 'Francisco Javier del Castillo Ramírez'
 __version__ = '1.0'
-__last_modification__ = '2017.06.09'
 
 from scapy.all import *
 import os
 import nmap
 import time
 import commands
-#import sys
-#from subprocess import Popen, PIPE
 
 diccionario = dict() # diccionario para almacenar IP y MAC de los pcs.
 nm = nmap.PortScanner() # objeto donde se almacenan los equipos conectados a la red
@@ -49,16 +46,6 @@ def analizar_red():
                 print "desconocida"
     print'\n============ {0} ============'.format('Analizando paquetes')
 
-'''
-def mostrar_resultado(resultado):
-    #si no hay errores
-    if resultado[0] == 0:
-        print resultado[1]
-    #si ahy errores
-    else:
-        print "Error: "+ str(resultado[0])
-        print "Detalles: " + resultado[1]
-'''
 
 def pause():
     programPause = raw_input("Pulsa <ENTER> para continuar...")
@@ -129,8 +116,6 @@ def analizar_mac(mac_atacante):
     for host in nm.all_hosts():
 
         if 'mac' in nm[host]['addresses']:
-            # print nm[host]
-            # print "Comparando MAC atacante: {0} con MAC: {1}".format(mac_atacante, nm[host]['addresses']['mac'])
             if (nm[host]['addresses']['mac'] == mac_atacante):
 
                 print "\n[+]\tDatos almacenados del atacante: "
