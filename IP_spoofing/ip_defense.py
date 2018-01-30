@@ -212,7 +212,7 @@ def analizar_paquetes(pkt):
 
 
 def parar_ejecucion():
-    
+
     print "\n... Limpiando reglas iptables ..."
     os.system("iptables --flush")
     os.system("iptables --zero")
