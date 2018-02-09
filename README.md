@@ -1,2 +1,3 @@
-# PFG
-Proyecto de fin de grado
+# Abstract
+
+This project is essentially based on computer networking security research and development. The main goal of this project is carrying out a detailed study of the different types of spoofing attacks that currently exists. In order to achieve it, I have analysed deeply their performance. Moreover, I have also studied the wide range of available tools used for creating the aforementioned attacks. The last part of the project includes the application developed for the defense of our equipment from these attacks. The application is mainly programmed in Python language. This application consists of two independent modules, the first one defends us from IP spoofing attacks, and the second one from ARP attacks and DNS spoofing.
